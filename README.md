@@ -1,6 +1,9 @@
 # SST
 Simple Search Template with React/PythonFlask Front/Back
 
+Usage:
+git clone https://github.com/sberbank-ai/ru-clip.git
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

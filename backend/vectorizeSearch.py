@@ -1,23 +1,19 @@
-import sys
-sys.path.append("./ru-clip")
-from clip.evaluate.utils import (get_tokenizer, load_weights_only, get_text_batch)
-import gc
+import ruclip
+import ngtpy
 
-model, args = load_weights_only("ViT-B/32-small")
-# vis_model = model.visual_encoder.cuda().float().eval()
-text_model = model.text_encoder.float().eval()
-tokenizer = get_tokenizer()
-
-del model
-
-gc.collect()
+device = 'cpu'
+model, processor = ruclip.load('ruclip-vit-base-patch16-224', device=device)
 
 def vectorizeSearch(new_text, index): 
-    input_ids, attention_mask = get_text_batch([new_text], tokenizer, args)
-    vector = text_model(**{"x": input_ids, "attention_mask": attention_mask}).to('cpu').detach().numpy()
-    results = index.search(vector, 6)
+    input_ids = processor.encode_text(new_text).unsqueeze(0)
+    print(input_ids.shape, processor.decode_text(input_ids))
+    embedding = model.encode_text(input_ids).detach().numpy()
+    results = index.search(embedding, 6)
     for i, (id, distance) in enumerate(results):
         print(str(i) + ": " + str(id) + ", " + str(distance))
         object = index.get_object(id)
         print(object)
-        img = open(img_paths[id], 'rb')
+
+if __name__ == "__main__":
+    index = ngtpy.Index('test')
+    vectorizeSearch('тестируем', index)

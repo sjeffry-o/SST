@@ -17,14 +17,10 @@ img_transform = Compose([
     ])
 
 vis_model = model.visual.cuda().float().eval()
-del model
 
-gc.collect()
-
-def computeVectors(glob_path):
+def computeImgVectors(glob_path):
     img_vectors = torch.Tensor().to('cpu')
     img_paths = glob(glob_path)
-    vectors_list = []
     device = 'cuda'
     count = 0
 
@@ -37,7 +33,21 @@ def computeVectors(glob_path):
         image = img_transform(image)
         image = torch.tensor(image)
         image = image.to(device)
-        # vectors_list.append(vis_model(image.unsqueeze(0)).to('cpu'))
         img_vectors = torch.cat([img_vectors, vis_model(image.unsqueeze(0)).to('cpu')])
         count += 1
     return img_vectors
+
+def computeTextVectors(text_list):
+    text_vectors = torch.Tensor().to('cpu')
+    device = 'cuda'
+    count = 0
+
+    with torch.no_grad():
+      for text in text_list:
+        if count % 20000 == 0:
+          print(count, "passed")
+        input_ids = processor.encode_text(text).unsqueeze(0).cuda()
+        embedding = model.encode_text(input_ids)
+        text_vectors = torch.cat([text_vectors, embedding.to('cpu')])
+        count += 1
+    return text_vectors
